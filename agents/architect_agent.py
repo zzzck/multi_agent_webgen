@@ -27,8 +27,13 @@ class ArchitectAgent(AgentBase):
         super().__init__("Architect", ARCH_PROMPT)
 
     def process(self, prd):
-        output = self.run(json.dumps(asdict(prd), ensure_ascii=False))
-        data = json.loads(output)
+        output = self.run(json.dumps(asdict(prd), ensure_ascii=False), json_mode=True)
+        if not output or not output.strip():
+            raise ValueError("Architect agent returned empty output; cannot build page spec")
+        try:
+            data = json.loads(output)
+        except json.JSONDecodeError as exc:
+            raise ValueError(f"Architect agent response is not valid JSON: {output}") from exc
         components = []
         for comp in data.get("components", []):
             children = [ComponentChild(**child) for child in comp.get("children", [])]
