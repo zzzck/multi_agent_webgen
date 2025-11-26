@@ -1,6 +1,7 @@
 from core.manager import Manager
 import os
 import json
+from datetime import datetime
 
 # 在os中设置OPENAI_API_KEY
 os.environ["OPENAI_API_KEY"] = "sk-Fukj5EU0DA0wGBHMNfhEX5IgggeuieNfKf1ExfYpDC7ELkL1"
@@ -13,12 +14,23 @@ brief = """
 主题：春节 × 团圆 × 嗑瓜子 × 年味。
 """
 
-manager = Manager()
-html = manager.run(brief)
-with open("output/messages.json", "w", encoding="utf-8") as log_file:
-    json.dump(manager.bus.dump(), log_file, ensure_ascii=False, indent=2)
+combinations = [
+    (cp, sp)
+    for cp in (True, False)
+    for sp in (True, False)
+]
 
-with open("output/index.html", "w", encoding="utf-8") as f:
-    f.write(html)
+for cp, sp in combinations:
+    timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+    suffix = f"SP-{sp}_CP-{cp}_{timestamp}"
 
-print("网页已生成：output/index.html")
+    manager = Manager(cp=cp, sp=sp)
+    html = manager.run(brief)
+
+    with open(f"output/messages_{suffix}.json", "w", encoding="utf-8") as log_file:
+        json.dump(manager.bus.dump(), log_file, ensure_ascii=False, indent=2)
+
+    with open(f"output/index_{suffix}.html", "w", encoding="utf-8") as f:
+        f.write(html)
+
+    print(f"网页已生成：output/index_{suffix}.html")
